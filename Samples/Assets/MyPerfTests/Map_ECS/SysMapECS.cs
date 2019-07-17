@@ -15,12 +15,10 @@ namespace MH
         public int v;
     }
 
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
-    // [DisableAutoCreation]
+    [DisableAutoCreation]
     public class SysMapECS : JobComponentSystem
     {
         private NativeHashMap<Entity, int> _map;
-        private NativeHashMap<Entity, int>.Concurrent _cm;
         private MapECSCtrl _ctrl;
 
         [BurstCompile]
@@ -34,11 +32,21 @@ namespace MH
             }
         }
 
+        [BurstCompile]
+        public struct ClearJob : IJob
+        {
+            [WriteOnly] public NativeHashMap<Entity, int> m;
+
+            public void Execute()
+            {
+                m.Clear();
+            }
+        }
+
         protected override void OnCreate()
         {
             base.OnCreate();
-            _map = new NativeHashMap<Entity, int>((int)3e6, Allocator.Persistent);
-            _cm = _map.ToConcurrent();
+            _map = new NativeHashMap<Entity, int>((int)2e6, Allocator.Persistent);
             Debug.Log("OnCreate");
         }
 
@@ -52,7 +60,6 @@ namespace MH
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            _map.Clear();
             Debug.Log("StartRunning");
         }
 
@@ -64,8 +71,8 @@ namespace MH
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) //1,000,000 insert = 5ms
         {
-            var job = new AddEntryJob{ m = _cm };
-            var handle = job.Schedule(this, inputDeps);
+            var job = new AddEntryJob{ m = _map.ToConcurrent() }.Schedule(this, inputDeps);
+            var handle = new ClearJob { m = _map }.Schedule(job);
             return handle;
         }
     }

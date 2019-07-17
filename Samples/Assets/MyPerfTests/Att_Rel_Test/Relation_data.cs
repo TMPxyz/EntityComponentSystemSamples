@@ -6,6 +6,42 @@ using Unity.Entities;
 
 namespace MH
 {
+    ///<summary>
+    /// each Mind is a entity:
+    /// * CpTargetNodeBuf : list of entities of mindImageTargetNode
+    ///
+    /// Each mindImageTargetNode is a entity:
+    /// * CpOwner : point to the mind entity
+    /// * CpMindImageTargetNode : point to self
+    /// * CpAttitude : attitude of mind to this target
+    /// * CpRelationBuf : list of entities containing relations
+    /// 
+    /// Each relation node entity:
+    /// * CpRelation : from, to, strength, trans
+    /// * CpIsDirty
+    ///</summary>
+    [InternalBufferCapacity(0)]
+    public struct CpTargetNodeBuf :IBufferElementData 
+    {
+        public Entity target;
+    }
+
+    public struct CpOwner : IComponentData
+    {
+        public Entity entOwner;
+    }
+
+    public struct CpMindImageTargetNode : IComponentData
+    {
+        public Entity entTargetNode;
+    }
+
+    [InternalBufferCapacity(0)]
+    public struct CpRelationBuf : IBufferElementData
+    {
+        public Entity entRelation; //entity of a CpRelation
+    }
+
     public struct CpRelation : IComponentData
     {
         public Entity from; // this entity is mindImage of "From" in a mind "M"
@@ -14,23 +50,16 @@ namespace MH
         public float trans;
     }
 
-    public struct CpOwner : ISharedComponentData
+    public struct CpIsDirty : IComponentData
     {
-        public Entity owner;
+        public bool dirty;
     }
 
-    // public struct CpRelFrom : ISharedComponentData
-    // {
-    //     public Entity from;
-    // }
+    //this is the mind image of "target" in a "mind"
+    public struct CpAttitude : IComponentData
+    {
+        public float attitude;
+    }
 
-    // public struct CpRelData : IComponentData
-    // {
-    //     public Entity to;
-    //     public float strength;
-    //     public float trans;
-    // }
 
-    // public struct CpRelDataUpdate : IComponentData
-    // {}
 }

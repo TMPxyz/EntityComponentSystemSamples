@@ -85,27 +85,14 @@ namespace MH
             
         }
 
-        private void _Start_NativeMap() //1M - 5ms
-        {
-            var w = World.Active;
-            var sys = w.GetOrCreateSystem<SysMapECS>();
-            sys.Enabled = true;
-
-            var entmgr = w.EntityManager;
-            for(int i=0; i<_map_entry_cnt; ++i)
-            {
-                var e = entmgr.CreateEntity();
-                entmgr.AddComponentData(e, new CpMap{ 
-                    v = Random.Range(0, 100), 
-                });
-            }
-        }
+        
 
         void Update()
         {
             switch(_mode)
             {
                 case EMode.EMap: _Update_EMap(); break;
+                case EMode.ENativeMap:  break;
                 case EMode.EMapConcurrent: _Update_EMapCon(); break;
             }
         }
@@ -117,6 +104,23 @@ namespace MH
                 var ent = new Entity{Index=idx, Version=1};
                 _con_map.AddOrUpdate(ent, idx, (k, oldval) => idx);
             });
+        }
+
+        private void _Start_NativeMap() //1M - 5ms
+        {
+            var w = World.Active;
+            var grp = w.GetOrCreateSystem<SimulationSystemGroup>();
+            var sys = w.GetOrCreateSystem<SysMapECS>();
+            grp.AddSystemToUpdateList(sys);
+
+            var entmgr = w.EntityManager;
+            for(int i=0; i<_map_entry_cnt; ++i)
+            {
+                var e = entmgr.CreateEntity();
+                entmgr.AddComponentData(e, new CpMap{ 
+                    v = Random.Range(0, 100), 
+                });
+            }
         }
 
         void _Update_EMap()
